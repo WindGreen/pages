@@ -150,7 +150,6 @@
             }
             i=left_start
             html=""
-            console.log(left_start,left_end,cu,right_start,right_end)
             while(true){
                 html+="<small>"+list[i]+"<small>&nbsp;"
                 if (i==left_end){
@@ -206,7 +205,7 @@
         function saveData(data){
             time=(new Date()).valueOf()
             last=data[data.length-1]
-            if (last!=undefined && last.name==current){
+            if (last!=undefined && last.name==current && time-last.time.end<2000){
                 last.time.end=time
             }else{
                 data.push({
