@@ -26,7 +26,7 @@
                 transform: translate(-50%,-50%);
                 text-align: center;
             }
-            #timer>span{
+            #timer span{
                 font-size: xx-large;
             }
             .timer-number{
@@ -152,7 +152,7 @@
             i=left_start
             html=""
             while(true){
-                html+="<small>"+list[i]+"<small>&nbsp;"
+                html+="<small>"+list[i]+"</small>&nbsp;"
                 if (i==left_end){
                     break
                 }
@@ -161,10 +161,10 @@
                     i=0
                 }
             }
-            html+="<span>"+list[cu]+"<span>"
+            html+="<span>"+list[cu]+"</span>"
             i=right_start
             while(true){
-                html+="<small>"+list[i]+"</samll>&nbsp;"
+                html+="&nbsp;<small>"+list[i]+"</samll>"
                 if (i==right_end){
                     break
                 }
