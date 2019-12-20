@@ -126,13 +126,13 @@
                 total+=data[i].time
             }
             let start=0
-            let y=15
+            let y=10
             for(let i in data){
                 let el=data[i]
                 let per=el.time/total
                 let end=start+per*360
                 drawPiePart(ctx,60,50,50,start,end,el.color)
-                drawRect(ctx,145,y,15,8,el.color)
+                drawRect(ctx,145,y,18,8,el.color)
                 let t=el.time
                 let h=Math.floor(t/3600)
                 t%=3600
@@ -144,6 +144,16 @@
                 y+=20
                 start=end
             }
+            let t=total
+            let h=Math.floor(t/3600)
+            t%=3600
+            let m=Math.floor(t/60)
+            let s=Math.floor(t%60)
+            ctx.fillStyle="black"
+            ctx.font="12px Arial bold"
+            let str='总计 '+timeStr(h,m,s)
+            ctx.fillText(str,170,y)
+
         }
         function drawRect(ctx,x,y,w,h,color){
                 ctx.beginPath()
@@ -276,7 +286,6 @@
                 }
             },
             methods:{
-
                 start:function(title){
                     for(let i in this.category){
                         if (this.category[i].title===title){
