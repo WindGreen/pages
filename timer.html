@@ -76,7 +76,7 @@
                 <p class="current_time">当前：{{currentTime}}</p>
                 <p class="total_time">累计：{{totalTime}}</p>
                 <div class="category row btn-group">
-                    <a v-for="item in category" type="button" class="category-item btn btn-sm btn-default" v-bind:class='{disabled:item.active}' v-on:click="start(item.title)" v-bind:style="{backgroundColor:item.color}">{{item.title}}</a>
+                    <a v-for="item in category" type="button" class="category-item btn btn-default" v-bind:class='{disabled:item.active}' v-on:click="start(item.title)" v-bind:style="{backgroundColor:item.color}">{{item.title}}</a>
                     <a type="button" class="btn btn-sm btn-default" style="background-color: bisque;">+</a>
                 </div>
                 <div class="clearfix"></div>
