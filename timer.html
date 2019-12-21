@@ -93,7 +93,7 @@
                 </div>
                 <div class="clearfix"></div>
                 <div class="row">
-                    <div class="col col-sm-6  offset-sm-3"><button class="btn btn-sm btn-primary btn-block" v-on:click="newDuration">开始新的周期</button></div>
+                    <div class="col"><button class="btn btn-sm btn-primary btn-block" v-on:click="newDuration">开始新的周期</button></div>
                 </div>
                 <hr>
                 <div id="chart" class="">
@@ -102,7 +102,7 @@
                     </div>
                     <div class="timepie row">
                         <canvas id="piezone" class="piezone"></canvas>
-                        <!-- <div class="col col-md-7">
+                        <!-- <div class="col col-sm-7">
                             <p class="pie-part" v-for="item in stat">{{item.title}}:{{item.time}}({{item.percent}}%)</p>
                         </div> -->
                     </div>
@@ -113,14 +113,14 @@
                     </div>
                     <div class="clearfix"></div>
                     <div class="row">
-                        <div class="col col-sm-6  offset-sm-3" v-if='historyIndex<history.length'><button class="btn btn-sm btn-light btn-block" v-on:click="returnCurrent">返回当前周期</button></div>
+                        <div class="col" v-if='historyIndex<history.length'><button class="btn btn-sm btn-light btn-block" v-on:click="returnCurrent">返回当前周期</button></div>
                     </div>
                 </div>
             </div>
             <footer class="row menu text-center sr-only">
-                <div class="menu-item col col-md-4">历史</div>
-                <div class="menu-item col col-md-4">主页</div>
-                <div class="menu-item col col-md-4">用户</div>
+                <div class="menu-item col col-sm-4">历史</div>
+                <div class="menu-item col col-sm-4">主页</div>
+                <div class="menu-item col col-sm-4">用户</div>
             </footer>
         </div>
     </body>
