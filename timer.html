@@ -107,9 +107,9 @@
                         </div> -->
                     </div>
                     <div class="timecontrol">
-                        <a href="#" v-on:click="prev" class="link arrow arrow-left"><</a>
+                        <a href="#" v-on:click="prev" class="link arrow arrow-left" v-if="historyIndex>0"><</a>
                         <span>{{startTime}} —— {{endTime}}</span>
-                        <a href="#" v-on:click="next" class="arrow arrow-right">></a>
+                        <a href="#" v-on:click="next" class="arrow arrow-right" v-if="historyIndex<history.length">></a>
                     </div>
                     <div class="clearfix"></div>
                     <div class="row">
