@@ -4,7 +4,7 @@
         <title>计时器</title>
         <meta charset="utf-8" name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0"/>
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-        <script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+        <!-- <script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script> -->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/vue@2.6.0"></script>
         <style>
@@ -74,7 +74,9 @@
                 float: right;
             }
             .timecontrol{
+                width: 100%;
                 padding: 15px;
+                text-align: center;
             }
         </style>
     </head>
@@ -94,20 +96,25 @@
                     <div class="col col-sm-6  offset-sm-3"><button class="btn btn-sm btn-primary btn-block" v-on:click="newDuration">开始新的周期</button></div>
                 </div>
                 <hr>
-                <div class="timeline row">
-                    <canvas id="linezone"></canvas>
-                </div>
-                <div class="timepie row">
-                    <canvas id="piezone" class="piezone"></canvas>
-                    <!-- <div class="col col-md-7">
-                        <p class="pie-part" v-for="item in stat">{{item.title}}:{{item.time}}({{item.percent}}%)</p>
-                    </div> -->
-                </div>
-                <div class="timecontrol">
-                    <a href="#" v-on:click="prev" class="link arrow arrow-left"><</a>{{startTime}} —— {{endTime}}<a href="#" v-on:click="next" class="arrow arrow-right">></a>
-                </div>
-                <div class="row">
-                    <div class="col col-sm-6  offset-sm-3" v-if='historyIndex<history.length'><button class="btn btn-sm btn-light btn-block" v-on:click="returnCurrent">返回当前周期</button></div>
+                <div id="chart" class="">
+                    <div class="timeline row">
+                        <canvas id="linezone"></canvas>
+                    </div>
+                    <div class="timepie row">
+                        <canvas id="piezone" class="piezone"></canvas>
+                        <!-- <div class="col col-md-7">
+                            <p class="pie-part" v-for="item in stat">{{item.title}}:{{item.time}}({{item.percent}}%)</p>
+                        </div> -->
+                    </div>
+                    <div class="timecontrol">
+                        <a href="#" v-on:click="prev" class="link arrow arrow-left"><</a>
+                        <span>{{startTime}} —— {{endTime}}</span>
+                        <a href="#" v-on:click="next" class="arrow arrow-right">></a>
+                    </div>
+                    <div class="clearfix"></div>
+                    <div class="row">
+                        <div class="col col-sm-6  offset-sm-3" v-if='historyIndex<history.length'><button class="btn btn-sm btn-light btn-block" v-on:click="returnCurrent">返回当前周期</button></div>
+                    </div>
                 </div>
             </div>
             <footer class="row menu text-center sr-only">
@@ -381,10 +388,12 @@
                     }else this.historyIndex--
                 },
                 next:function(){
-                    if(this.historyIndex==this.history.length){
-                        this.refreshDraw()
-                        return
-                    }else this.historyIndex++
+                    if(this.historyIndex<this.history.length){
+                        this.historyIndex++
+                        if(this.historyIndex==this.history.length){
+                            this.refreshDraw()
+                        }
+                    }
                 },
                 returnCurrent:function(){
                     this.historyIndex=this.history.length
@@ -429,36 +438,13 @@
             }
         })
         setInterval(app.update,1000)
-
-        function getCategory(){
-            let cate=localStorage.getItem("category")
-            if (cate==null){
-                return [
-                    "工作",
-                    "学习",
-                    "娱乐",
-                ]
-            }
-            return cate
-        }
-        function getData(){
-            let d=localStorage.getItem("timer")
-            if (d==null){
-                return [
-                    // {
-                    //     "name":"工作",
-                    //     "time":{
-                    //         "start":0,
-                    //         "end":0,
-                    //     },
-                    // }
-                ]
-            }
-            return JSON.parse(d)      
-        }
-        function setData(data){
-            localStorage.setItem("timer",JSON.stringify(data))
-        }
+        var hm=new Hammer(document.getElementById('chart'))
+        hm.on('swiperight',()=>{
+            app.prev()
+        })
+        hm.on('swipeleft',()=>{
+            app.next()
+        })
     </script>
     <script>
         var _hmt = _hmt || [];
