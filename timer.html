@@ -370,7 +370,7 @@
                         this.startTime=''
                         this.endTime=''
                     }else{
-                        this.startTime=dateTime(this.records[last].start)
+                        this.startTime=dateTime(this.records[0].start)
                         this.endTime=dateTime(this.records[last].end)
                     }
                 },
@@ -452,7 +452,7 @@
                     drawSerial('linezone',list)
                     drawPie("piezone",stat)
                     let last=list.length-1
-                    this.startTime=dateTime(list[last].start)
+                    this.startTime=dateTime(list[0].start)
                     this.endTime=dateTime(list[last].end)
                 }
             },
