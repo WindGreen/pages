@@ -62,7 +62,7 @@
             }
             .category-item{
                 float: left;
-                color:white !important;
+                color: white !important;
             }
             .piezone{
                 float: left;
@@ -91,12 +91,12 @@
                 <p class="current_time">当前：{{currentTime}}</p>
                 <p class="total_time">累计：{{totalTime}}</p>
                 <div class="category row btn-group">
-                    <a v-for="item in category" type="button" class="category-item btn btn-default" v-bind:class='{disabled:item.active}' v-on:click="start(item.title)" v-bind:style="{backgroundColor:item.color}" aria-disabled="true">{{item.title}}</a>
-                    <a type="button" class="btn btn-sm btn-default" style="background-color: bisque;">+</a>
+                    <a v-for="item in category"  href="#" class="category-item btn btn-default" v-bind:class='{disabled:item.active}' v-on:click="start(item.title)" v-bind:style="{backgroundColor:item.color}" >{{item.title}}</a>
+                    <a href="#" class="btn btn-sm btn-default" style="background-color: bisque;">+</a>
                 </div>
                 <div class="clearfix"></div>
                 <div class="row">
-                    <div class="col"><button type="button" class="btn btn-sm btn-primary" v-bind:class='{disabled:records.length==0}'  v-on:click="newDuration">开始新的周期</button></div>
+                    <div class="col"><a  href="#" class="btn btn-sm btn-outline-primary" v-bind:class='{disabled:records.length==0}'  v-on:click="newDuration">开始新的周期</a></div>
                 </div>
                 <hr>
                 <div id="chart" class="">
@@ -116,7 +116,7 @@
                     </div>
                     <div class="clearfix"></div>
                     <div class="row">
-                        <div class="col" v-if='historyIndex<history.length'><button class="btn btn-sm btn-light" v-on:click="returnCurrent">返回当前周期</button></div>
+                        <div class="col"><a class="btn btn-sm btn-light" v-on:click="returnCurrent"  v-bind:class='{disabled:historyIndex==history.length}'>返回当前周期</a></div>
                     </div>
                 </div>
             </div>
@@ -164,7 +164,6 @@
             // ctx.stroke()
         }
         function drawPie(id,data){
-            console.log('pi',data)
             var canvas=document.getElementById(id)
             canvas.height=120
             var ctx=canvas.getContext('2d')
@@ -215,7 +214,6 @@
                 ctx.fill()
         }
         function drawSerial(id,data){
-            console.log('se')
             var canvas=document.getElementById(id)
             canvas.height= 20
             let width=canvas.width
@@ -322,7 +320,6 @@
                     return list
                 },
                 stat:function(){
-                    console.log('stat')
                     for(let i in this.category){
                         this.category[i].time=0
                     }
@@ -334,7 +331,6 @@
                     return this.category
                 },
                 recordsW:function(){
-                    console.log('recordsW')
                     for(let i=0;i<this.records.length;i++){
                         this.records[i]['color']=this.category[this.records[i].title].color
                     }
@@ -379,7 +375,6 @@
                     }
                 },
                 newDuration:function(){
-                    if(this.records.length==0) return
                     $('#newDurationConfirm').modal()
                     return
                 },
