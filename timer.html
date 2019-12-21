@@ -20,6 +20,7 @@
                 right: 0;
                 width: 100%;
                 height: 100%;
+
             }
             #timer{
                 position: absolute;
@@ -55,7 +56,7 @@
                 background-color: rgb(92, 90, 90);
             }
             .category{
-                
+                margin-bottom: 20px;
             }
             .category-item{
                 float: left;
@@ -65,6 +66,15 @@
             }
             .timeline,.timepie{
                 padding:15px;
+            }
+            .arrow-left{
+                float: left;
+            }
+            .arrow-right{
+                float: right;
+            }
+            .timecontrol{
+                padding: 15px;
             }
         </style>
     </head>
@@ -80,6 +90,9 @@
                     <a type="button" class="btn btn-sm btn-default" style="background-color: bisque;">+</a>
                 </div>
                 <div class="clearfix"></div>
+                <div class="row">
+                    <div class="col col-sm-6  offset-sm-3"><button class="btn btn-sm btn-primary btn-block" v-on:click="newDuration">开始新的周期</button></div>
+                </div>
                 <hr>
                 <div class="timeline row">
                     <canvas id="linezone"></canvas>
@@ -90,9 +103,11 @@
                         <p class="pie-part" v-for="item in stat">{{item.title}}:{{item.time}}({{item.percent}}%)</p>
                     </div> -->
                 </div>
-                <dv class="clearfix"></dv>
+                <div class="timecontrol">
+                    <a href="#" v-on:click="prev" class="link arrow arrow-left"><</a>{{startTime}} —— {{endTime}}<a href="#" v-on:click="next" class="arrow arrow-right">></a>
+                </div>
                 <div class="row">
-                    <button class="btn btn-sm btn-primary col col-md-6 offset-md-3" v-on:click="newDuration">开始新的周期</button>
+                    <div class="col col-sm-6  offset-sm-3" v-if='historyIndex<history.length'><button class="btn btn-sm btn-light btn-block" v-on:click="returnCurrent">返回当前周期</button></div>
                 </div>
             </div>
             <footer class="row menu text-center sr-only">
@@ -103,6 +118,9 @@
         </div>
     </body>
     <script>
+        function dateTime(d){
+            return d.getMonth().toString().padStart(2,0)+'/'+d.getDate().toString().padStart(2,0)+' '+d.getHours().toString().padStart(2,0)+':'+d.getMinutes().toString().padStart(2,0)
+        }
         function timeStr(h,m,s){
             return h.toString().padStart(2,0)+'h '+m.toString().padStart(2,0)+'m '+s.toString().padStart(2,0)+'s'
         }
@@ -117,7 +135,7 @@
         }
         function drawPie(id,data){
             var canvas=document.getElementById(id)
-            canvas.height=150
+            canvas.height=120
             var ctx=canvas.getContext('2d')
             ctx.textBaseline = 'top'
 
@@ -229,6 +247,9 @@
                     // }
                 ],
                 history:[],
+                historyIndex:-1,
+                startTime:'',
+                endTime:''
             },
             computed:{
                 totalTime:function(){
@@ -310,6 +331,7 @@
                     }
                 },
                 refreshDraw:function(){
+                    if(this.historyIndex<this.history.length) return
                     drawPie("piezone",this.stat)
                     drawSerial("linezone",this.recordsW)
                 },
@@ -317,10 +339,14 @@
                     if(this.records.length==0) return;
                     this.loadHistory()
                     this.history.push(this.records)
+                    this.historyIndex=this.history.length
                     localStorage.setItem("history",JSON.stringify(this.history))
                     this.records=[]
                     this.current={}
                     this.saveRecords()
+                    for(let i in this.category){
+                        this.category[i].active=false
+                    }
                 },
                 saveRecords:function(){
                     localStorage.setItem("records",JSON.stringify(this.records))
@@ -342,13 +368,62 @@
                     let h=localStorage.getItem("history")
                     this.history=JSON.parse(h)
                     if(this.history==null) this.history=[]
+                    else for(let i=0;i<this.history.length;i++){
+                        for(let j=0;j<this.history[i].length;j++){
+                            this.history[i][j].start=new Date(this.history[i][j].start)
+                            this.history[i][j].end=new Date(this.history[i][j].end)
+                        }
+                    }
+                },
+                prev:function(){
+                    if(this.historyIndex<=0){
+                        return
+                    }else this.historyIndex--
+                },
+                next:function(){
+                    if(this.historyIndex==this.history.length){
+                        this.refreshDraw()
+                        return
+                    }else this.historyIndex++
+                },
+                returnCurrent:function(){
+                    this.historyIndex=this.history.length
+                    this.refreshDraw()
+                }
+            },
+            watch:{
+                historyIndex:function(index){
+                    console.log(index,this.history.length,index>=this.history.length || index<0)
+                    if(index>=this.history.length || index<0){
+                        return
+                    }
+                    let stat={}
+                    for(let title in this.category){
+                        stat[title]=Object.assign(this.category[title],{time:0})
+                    }
+                    let list=this.history[index]
+                    for(let i=0;i<list.length;i++){
+                        list[i].color=this.category[list[i].title].color
+                        stat[list[i].title].time+=Math.round((list[i].end-list[i].start)/1000)
+                    }
+                    console.log(list,stat)
+                    drawSerial('linezone',list)
+                    drawPie("piezone",stat)
+                    let last=list.length-1
+                    this.startTime=dateTime(list[last].start)
+                    this.endTime=dateTime(list[last].end)
                 }
             },
             mounted:function(){
+                this.loadHistory()
+                this.historyIndex=this.history.length
                 this.loadRecords()
                 if(this.records.length>0) {
-                    this.current=this.category[this.records[this.records.length-1].title]
+                    let last=this.records.length-1
+                    this.current=this.category[this.records[last].title]
                     this.category[this.current.title].active=true
+                    this.startTime=dateTime(this.records[last].start)
+                    this.endTime=dateTime(this.records[last].end)
                 }
                 this.refreshDraw()
             }
