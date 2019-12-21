@@ -81,6 +81,12 @@
                 padding: 15px;
                 text-align: center;
             }
+            .color-select>option:hover{
+                background-color: violet;
+            }
+            .vertical-space{
+                padding: 10px 0;
+            }
         </style>
     </head>
     <body >
@@ -91,8 +97,8 @@
                 <p class="current_time">当前：{{currentTime}}</p>
                 <p class="total_time">累计：{{totalTime}}</p>
                 <div class="category row btn-group">
-                    <a v-for="item in category"  href="#" class="category-item btn btn-default" v-bind:class='{disabled:item.active}' v-on:click="start(item.title)" v-bind:style="{backgroundColor:item.color}" >{{item.title}}</a>
-                    <a href="#" class="btn btn-sm btn-default" style="background-color: bisque;">+</a>
+                    <a v-for="item in category"  href="#" class="category-item btn btn-default" v-bind:class='{disabled:item.active}' v-on:click="start(item.id)" v-bind:style="{backgroundColor:item.color}" >{{item.title}}</a>
+                    <a href="#" class="category-item btn btn-sm btn-secondary" data-toggle="modal" data-target="#categoryEditor">+</a>
                 </div>
                 <div class="clearfix"></div>
                 <div class="row">
@@ -119,6 +125,7 @@
                         <div class="col"><a class="btn btn-sm btn-light" v-on:click="returnCurrent"  v-bind:class='{disabled:historyIndex==history.length}'>返回当前周期</a></div>
                     </div>
                 </div>
+                <a href="#" class="btn" v-on:click="test">测试</a>
             </div>
             <div class="modal fade" id="newDurationConfirm" tabindex="-1" role="dialog" data-backdrop="static" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered" role="document">
@@ -140,6 +147,32 @@
                     </div>
                 </div>
             </div>
+            <div class="modal fade" id="categoryEditor" tabindex="-1" role="dialog"  aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">管理分类</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row vertical-space" v-for="item in category" v-bind:key="item.id">
+                                <div class="input-group">   
+                                    <button type="button" class="btn btn-danger input-group-prepend" v-on:click="delCategory(item.id)">X</button>                      
+                                    <input type="text" placeholder="名称" class="form-control" v-model="item.title" v-on:change='updateCategory(item.id)'>
+                                    <color-select v-bind:item='item' v-on:update-color="item.color=$event;updateCategory(item.id)"></color-select>
+                                </div>
+                            </div>
+                            <p class="text text-danger">{{message}}</p>
+                            <div class="row vertical-space"><div class="col text-center"><a href="#" v-on:click="addCategory" class=" btn btn-sm btn-outline-primary">添加</a></div></div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-primary" data-dismiss="modal">确定</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <footer class="row menu text-center sr-only">
                 <div class="menu-item col col-sm-4">历史</div>
                 <div class="menu-item col col-sm-4">主页</div>
@@ -148,6 +181,80 @@
         </div>
     </body>
     <script>
+        Vue.component('color-select',{
+            props:[
+                'item'
+            ],
+            data:function(){
+                return {
+                    colors:[
+                        '#1ABC9C',
+                        '#27AE60',
+                        '#3498DB',
+                        '#8E44AD',
+                        '#34495E',
+                        '#F39C12',
+                        '#D35400',
+                        '#E74C3C',
+                        '#BDC3C7',
+                        '#7F8C8D',
+                    ],
+                    selected:this.item.color,//'#1ABC9C',
+                    r:0,
+                    g:0,
+                    b:0
+                }
+            },
+            watch:{
+                r:function(v){
+                    this.r=parseInt(v)
+                    if(isNaN(this.r)) this.r=''
+                    this.selected=this.selfColor()
+                },
+                g:function(v){
+                    this.g=parseInt(v)
+                    if(isNaN(this.g)) this.g=''
+                    this.selected=this.selfColor()
+                },
+                b:function(v){
+                    this.b=parseInt(v)
+                    if(isNaN(this.b)) this.b=''
+                    this.selected=this.selfColor()
+                },
+                selected:function(v){
+                    this.$emit('update-color',v)
+                }
+            },
+            methods:{
+                selfColor:function(){
+                    let c= ('#'+this.r.toString(16).padStart(2,'0')+this.g.toString(16).padStart(2,'0')+this.b.toString(16).padStart(2,'0')).toUpperCase()
+                    return c
+                    //return 'rgb("'+this.r+'","'+this.g+'","'+this.b+'")'
+                },
+                select:function(color){
+                    this.r=parseInt(color.substr(1,2),16)
+                    this.g=parseInt(color.substr(3,2),16)
+                    this.b=parseInt(color.substr(5,2),16)
+                }
+            },
+            mounted:function(){
+                console.log(this.item.id,this.item.title,this.item.color)
+            },
+            template:`
+                    <div class="input-group-append dropleft">
+                        <button class="btn btn-secondary dropdown-toggle" type="button" v-bind:style="{backgroundColor:selected}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">颜色</button>
+                        <div class="dropdown-menu">
+                            <a v-for='color in colors' class="" href="#" v-on:click="select(color)" style="width: 60px;"><div v-bind:style="{backgroundColor: color}" style="width: 20px;height: 15px;float: left;margin: 6px 5px;"></div></a>
+                            <div class="clearfix"></div>
+                            <div class="dropdown-divider"></div>
+                            <div class="input-group" style="padding:10px; ">
+                                <input type="text" class="form-control" placeholder="R" v-model='r' style="font-size:12px">
+                                <input type="text" class="form-control" placeholder="G" v-model='g' style="font-size:12px">
+                                <input type="text" class="form-control" placeholder="B" v-model='b' style="font-size:12px">
+                            </div>
+                        </div>
+                    </div>`
+        })
         function dateTime(d){
             return d.getMonth().toString().padStart(2,0)+'/'+d.getDate().toString().padStart(2,0)+' '+d.getHours().toString().padStart(2,0)+':'+d.getMinutes().toString().padStart(2,0)
         }
@@ -238,27 +345,36 @@
         var app=new Vue({
             el:"#app",
             data:{
+                message:'',
                 current:{title:"",color:"red"},
                 category:{
-                    '工作':{
+                    1:{
+                        id:1,
+                        order:1,
                         title:"工作",
                         color:'rgb(255,194,51)',
                         time:0,
                         active:false,
                     },
-                    '休息':{
+                    2:{
+                        id:2,
+                        order:2,
                         title:"休息",
                         color:'rgb(40,167,69)',
                         time:0,
                         active:false,
                     },
-                    '娱乐':{
+                    3:{
+                        id:3,
+                        order:3,
                         title:'娱乐',
                         color:'rgb(255,61,103)',
                         time:0,
                         active:false,
                     },
-                    '其他':{
+                    4:{
+                        id:4,
+                        order:4,
                         title:"其他",
                         color:'rgb(5,155,255)',
                         time:0,
@@ -267,15 +383,10 @@
                 },
                 records:[
                     // {
-                    //     title:'工作',
+                    //     cid:3,
                     //     start:new Date('2019-12-20 05:56:00'),
                     //     end:new Date('2019-12-20 05:57:01')
                     // },
-                    // {
-                    //     title:'娱乐',
-                    //     start:new Date('2019-12-20 05:57:00'),
-                    //     end:new Date('2019-12-20 05:57:01')
-                    // }
                 ],
                 history:[],
                 historyIndex:-1,
@@ -286,7 +397,7 @@
                 totalTime:function(){
                     let total=0
                     for(let i=0;i<this.records.length;i++){
-                        if(this.records[i].title===this.current.title) total+=this.records[i].end-this.records[i].start
+                        if(this.records[i].cid===this.current.id) total+=this.records[i].end-this.records[i].start
                     }
 
                     let t=total/1000
@@ -313,7 +424,7 @@
                     let list=[]
                     for(let name in this.category){
                         let el=this.category[name]
-                        if (el.title!=this.current.title){
+                        if (el.cid!=this.current.id){
                             list.push(el)
                         }
                     }
@@ -326,39 +437,37 @@
                     for(let i=0;i<this.records.length;i++){
                         let el=this.records[i]
                         let time=Math.round(el.end-el.start)/1000
-                        this.category[el.title].time+=time
+                        this.category[el.cid].time+=time
                     }
                     return this.category
                 },
                 recordsW:function(){
                     for(let i=0;i<this.records.length;i++){
-                        this.records[i]['color']=this.category[this.records[i].title].color
+                        this.records[i]['color']=this.category[this.records[i].cid].color
                     }
                     return this.records
                 }
             },
             methods:{
-                start:function(title){
+                start:function(id){
                     for(let i in this.category){
-                        if (this.category[i].title===title){
+                        if (this.category[i].id===id){
                             this.category[i].active=true
                         }else{
                             this.category[i].active=false
                         }
                     }
-                    this.current=this.category[title]
+                    this.current=this.category[id]
                     this.records.push({
-                        title:title,
+                        cid:id,
                         start:new Date(),
                         end:new Date()
                     })
-                    this.saveRecords()
                 },
                 update:function(){
                     if(this.records.length>0){
                         this.records[this.records.length-1].end=new Date()
                         this.refreshDraw()
-                        this.saveRecords()
                     }
                 },
                 refreshDraw:function(){
@@ -381,17 +490,35 @@
                 doNewDuration:function(){
                     if(this.records.length==0) return;
                     this.loadHistory()
-                    this.history.push(this.records)
+                    this.history.push({
+                        category:this.category,
+                        records:this.records
+                    })
                     this.historyIndex=this.history.length
                     localStorage.setItem("history",JSON.stringify(this.history))
 
                     this.records=[]
                     this.current={}
-                    this.saveRecords()
+                    for(let i in this.category){
+                        this.category[i].active=false
+                    }
+                    this.refreshDraw()
                     $('#newDurationConfirm').modal('hide')
                 },
                 saveRecords:function(){
                     localStorage.setItem("records",JSON.stringify(this.records))
+                },
+                saveCategory:function(){
+                    localStorage.setItem('category',JSON.stringify(this.category))
+                },
+                loadCategory:function(){
+                    let c=localStorage.getItem('category')
+                    if(c!=null){
+                        this.category=JSON.parse(c)
+                        for(let i in this.category){
+                            this.category[i].active=false
+                        }
+                    }
                 },
                 loadRecords:function(){
                     let r=localStorage.getItem("records")
@@ -411,9 +538,9 @@
                     this.history=JSON.parse(h)
                     if(this.history==null) this.history=[]
                     else for(let i=0;i<this.history.length;i++){
-                        for(let j=0;j<this.history[i].length;j++){
-                            this.history[i][j].start=new Date(this.history[i][j].start)
-                            this.history[i][j].end=new Date(this.history[i][j].end)
+                        for(let j=0;j<this.history[i].records.length;j++){
+                            this.history[i].records[j].start=new Date(this.history[i].records[j].start)
+                            this.history[i].records[j].end=new Date(this.history[i].records[j].end)
                         }
                     }
                 },
@@ -433,6 +560,76 @@
                 returnCurrent:function(){
                     this.historyIndex=this.history.length
                     this.refreshDraw()
+                },
+                addCategory:function(){
+                    let max=0
+                    for(let i in this.category){
+                        if(this.category[i].id>max) max=this.category[i].id
+                    }
+                    let id=parseInt(max)+1
+                    this.$set(this.category,id,{
+                        id:id,
+                        title:'未命名',
+                        color:'#BDC3C7',
+                    })
+                },delCategory:function(id){
+                    let find=false
+                    for(let i=0;i<this.records.length;i++){
+                        if(this.records[i].cid==id){
+                            find=true
+                            break
+                        }
+                    }
+                    if (find){
+                        this.message='该分类正在使用，无法删除'
+                        return
+                    }
+                    this.$delete(this.category,id)
+                },
+                updateCategory:function(id,attr){
+                    this.saveCategory()
+                },
+                test:function(){
+                    console.log('debug test')
+                    let h=localStorage.getItem("history")
+                    if(h.substr(0,2)==='[['){
+                        console.log('change history')
+                        let cate={}
+                        for(let id in this.category){
+                            cate[this.category[id].title]=this.category[id]
+                        }
+                        let history=JSON.parse(h)
+                        let list=[]
+                        for(let i=0;i<history.length;i++){
+                            let records=[]
+                            for(let j=0;j<history[i].length;j++){
+                                records.push(Object.assign(
+                                    {cid:cate[history[i][j].title].id},
+                                    history[i][j]
+                                ))
+                            }
+                            list.push({
+                                category:app.category,
+                                records:records
+                            })
+                        }
+                        let str=JSON.stringify(list)
+                        localStorage.setItem('history',str)
+                    }
+                    let r=localStorage.getItem('records')
+                    if(r.substr(0,4)==='[{"t'){
+                        console.log('change records')
+                        let records=JSON.parse(r)
+                        let cate={}
+                        for(let id in this.category){
+                            cate[this.category[id].title]=this.category[id]
+                        }
+                        for(let i=0;i<records.length;i++){
+                            records[i]=Object.assign({cid:cate[records[i].title].id},records[i])
+                        }
+                        let str=JSON.stringify(records)
+                        localStorage.setItem('records',str)
+                    }
                 }
             },
             watch:{
@@ -440,30 +637,43 @@
                     if(index>=this.history.length || index<0){
                         return
                     }
-                    let stat={}
-                    for(let title in this.category){
-                        stat[title]=Object.assign({},this.category[title],{time:0})
+                    let stat=this.history[index].category
+                    for(let id in stat){
+                        stat[id].time=0
                     }
-                    let list=this.history[index]
+                    let list=this.history[index].records
                     for(let i=0;i<list.length;i++){
-                        list[i].color=this.category[list[i].title].color
-                        stat[list[i].title].time+=Math.round((list[i].end-list[i].start)/1000)
+                        list[i].color=stat[list[i].cid].color
+                        stat[list[i].cid].time+=Math.round((list[i].end-list[i].start)/1000)
                     }
                     drawSerial('linezone',list)
                     drawPie("piezone",stat)
                     let last=list.length-1
                     this.startTime=dateTime(list[0].start)
                     this.endTime=dateTime(list[last].end)
+                },
+                message:function(){
+                    if(this.message=="") return
+                    setTimeout(() => {
+                        this.message=""
+                    }, 3000);
+                },
+                category:function(){
+                    this.saveCategory()
+                },
+                records:function(){
+                    this.saveRecords()
                 }
             },
             mounted:function(){
+                this.loadCategory()
                 this.loadHistory()
                 this.historyIndex=this.history.length
                 this.loadRecords()
                 if(this.records.length>0) {
                     let last=this.records.length-1
-                    this.current=this.category[this.records[last].title]
-                    this.category[this.current.title].active=true
+                    this.current=this.category[this.records[last].cid]
+                    this.category[this.current.id].active=true
                 }
                 this.refreshDraw()
             }
