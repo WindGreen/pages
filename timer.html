@@ -9,6 +9,7 @@
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/vue@2.6.0"></script>
+        <link href="https://cdn.jsdelivr.net/npm/animate.css@3.5.1" rel="stylesheet" type="text/css">
         <style>
             body{
                 width: 100%;
@@ -87,6 +88,9 @@
             .vertical-space{
                 padding: 10px 0;
             }
+            .category-item-move{
+                transition:transform 1s;
+            }
         </style>
     </head>
     <body >
@@ -97,7 +101,7 @@
                 <p class="current_time">当前：{{currentTime}}</p>
                 <p class="total_time">累计：{{totalTime}}</p>
                 <div class="category row btn-group">
-                    <a v-for="item in category"  href="#" class="category-item btn btn-default" v-bind:class='{disabled:item.active}' v-on:click="start(item.id)" v-bind:style="{backgroundColor:item.color}" >{{item.title}}</a>
+                    <a v-for="item in orderCategory"  href="#" class="category-item btn btn-default" v-bind:class='{disabled:item.active}' v-on:click="start(item.id)" v-bind:style="{backgroundColor:item.color}" >{{item.title}}</a>
                     <a href="#" class="category-item btn btn-sm btn-secondary" data-toggle="modal" data-target="#categoryEditor">+</a>
                 </div>
                 <div class="clearfix"></div>
@@ -125,7 +129,6 @@
                         <div class="col"><a class="btn btn-sm btn-light" v-on:click="returnCurrent"  v-bind:class='{disabled:historyIndex==history.length}'>返回当前周期</a></div>
                     </div>
                 </div>
-                <a href="#" class="btn" v-on:click="test">测试</a>
             </div>
             <div class="modal fade" id="newDurationConfirm" tabindex="-1" role="dialog" data-backdrop="static" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered" role="document">
@@ -157,13 +160,30 @@
                             </button>
                         </div>
                         <div class="modal-body">
-                            <div class="row vertical-space" v-for="item in category" v-bind:key="item.id">
-                                <div class="input-group">   
-                                    <button type="button" class="btn btn-danger input-group-prepend" v-on:click="delCategory(item.id)">X</button>                      
-                                    <input type="text" placeholder="名称" class="form-control" v-model="item.title" v-on:change='updateCategory(item.id)'>
-                                    <color-select v-bind:item='item' v-on:update-color="item.color=$event;updateCategory(item.id)"></color-select>
+                            <transition-group 
+                                name="category-item"
+                                enter-active-class="animated slideInLeft"
+                                leave-active-class="animated slideOutLeft"
+                            >
+                                <div class="row vertical-space" v-for="item in orderCategory" v-bind:key="item.id">
+                                    <div class="input-group">   
+                                        <button type="button" class="btn btn-danger input-group-prepend" v-on:click="delCategory(item.id)">X</button>                      
+                                        <input type="text" placeholder="名称" class="form-control" v-model="item.title" v-on:change='updateCategory(item.id)'>
+                                        <color-select v-bind:item='item' v-on:update-color="item.color=$event;updateCategory(item.id)"></color-select>
+                                        <button class="btn btn-outline-secondary input-group-append" v-on:click="moveDown(item.id)">
+                                            <svg class="bi bi-arrow-down" width="1em" height="1em" viewBox="0 0 20 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                                <path fill-rule="evenodd" d="M6.646 11.646a.5.5 0 01.708 0L10 14.293l2.646-2.647a.5.5 0 01.708.708l-3 3a.5.5 0 01-.708 0l-3-3a.5.5 0 010-.708z" clip-rule="evenodd"></path>
+                                                <path fill-rule="evenodd" d="M10 4.5a.5.5 0 01.5.5v9a.5.5 0 01-1 0V5a.5.5 0 01.5-.5z" clip-rule="evenodd"></path>
+                                                </svg>
+                                        </button>
+                                        <button class="btn btn-outline-secondary input-group-append" v-on:click="moveUp(item.id)">
+                                            <svg class="bi bi-arrow-up" width="1em" height="1em" viewBox="0 0 20 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                                <path fill-rule="evenodd" d="M10 5.5a.5.5 0 01.5.5v9a.5.5 0 01-1 0V6a.5.5 0 01.5-.5z" clip-rule="evenodd"></path>
+                                                <path fill-rule="evenodd" d="M9.646 4.646a.5.5 0 01.708 0l3 3a.5.5 0 01-.708.708L10 5.707 7.354 8.354a.5.5 0 11-.708-.708l3-3z" clip-rule="evenodd"></path>
+                                                </svg>                                        </button>
+                                    </div>
                                 </div>
-                            </div>
+                            </transition-group>
                             <p class="text text-danger">{{message}}</p>
                             <div class="row vertical-space"><div class="col text-center"><a href="#" v-on:click="addCategory" class=" btn btn-sm btn-outline-primary">添加</a></div></div>
                         </div>
@@ -188,21 +208,18 @@
             data:function(){
                 return {
                     colors:[
-                        '#1ABC9C',
-                        '#27AE60',
-                        '#3498DB',
-                        '#8E44AD',
-                        '#34495E',
-                        '#F39C12',
-                        '#D35400',
-                        '#E74C3C',
-                        '#BDC3C7',
-                        '#7F8C8D',
+                        '#1ABC9C','#27AE60','#3498DB','#8E44AD','#34495E',
+                        '#F39C12','#D35400','#E74C3C','#BDC3C7','#7F8C8D',
+                        '#E9967A','#FF3D67','#6A5ACD','#2F4F4F','#000000',
+                        '#CD5C5C','#FFC233','#A0522D','#059BFF','#FF8C00',
+                        '#2E8B57','#90EE90','#87CEEB','#696969','#28A745',
+                        '#B22222','#778899','#66CDAA','#191970','#C71585',
+                        '#FFD700','#808000','#008080','#F08080','#DC143C',
                     ],
                     selected:this.item.color,//'#1ABC9C',
-                    r:0,
-                    g:0,
-                    b:0
+                    r:'',
+                    g:'',
+                    b:''
                 }
             },
             watch:{
@@ -238,11 +255,11 @@
                 }
             },
             mounted:function(){
-                console.log(this.item.id,this.item.title,this.item.color)
+                if(this.item.color.substr(0,1)==='#') this.select(this.item.color)
             },
             template:`
                     <div class="input-group-append dropleft">
-                        <button class="btn btn-secondary dropdown-toggle" type="button" v-bind:style="{backgroundColor:selected}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">颜色</button>
+                        <button class="btn dropdown-toggle" type="button" v-bind:style="{backgroundColor:selected}" style="color:white" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">颜色</button>
                         <div class="dropdown-menu">
                             <a v-for='color in colors' class="" href="#" v-on:click="select(color)" style="width: 60px;"><div v-bind:style="{backgroundColor: color}" style="width: 20px;height: 15px;float: left;margin: 6px 5px;"></div></a>
                             <div class="clearfix"></div>
@@ -420,14 +437,14 @@
                         return timeStr(h,m,s)
                     }
                 },
-                curCat:function(){
+                orderCategory:function(){
                     let list=[]
-                    for(let name in this.category){
-                        let el=this.category[name]
-                        if (el.cid!=this.current.id){
-                            list.push(el)
-                        }
+                    for(let title in this.category){
+                        list.push(this.category[title])
                     }
+                    list.sort(function(a,b){
+                        return a.order-b.order
+                    })
                     return list
                 },
                 stat:function(){
@@ -563,14 +580,18 @@
                 },
                 addCategory:function(){
                     let max=0
+                    let orderMx=0
                     for(let i in this.category){
-                        if(this.category[i].id>max) max=this.category[i].id
+                        if(this.category[i].id > max) max=this.category[i].id
+                        if(this.category[i].order > orderMx) orderMx=this.category[i].order
+                        console.log(this.category[i].title,this.category[i].order)
                     }
                     let id=parseInt(max)+1
                     this.$set(this.category,id,{
                         id:id,
                         title:'未命名',
                         color:'#BDC3C7',
+                        order:orderMx+8
                     })
                 },delCategory:function(id){
                     let find=false
@@ -589,48 +610,32 @@
                 updateCategory:function(id,attr){
                     this.saveCategory()
                 },
-                test:function(){
-                    console.log('debug test')
-                    let h=localStorage.getItem("history")
-                    if(h.substr(0,2)==='[['){
-                        console.log('change history')
-                        let cate={}
-                        for(let id in this.category){
-                            cate[this.category[id].title]=this.category[id]
+                moveUp:function(id){
+                    let i=0
+                    for(;i<this.orderCategory.length;i++){
+                        if(this.orderCategory[i].id==id){
+                            break
                         }
-                        let history=JSON.parse(h)
-                        let list=[]
-                        for(let i=0;i<history.length;i++){
-                            let records=[]
-                            for(let j=0;j<history[i].length;j++){
-                                records.push(Object.assign(
-                                    {cid:cate[history[i][j].title].id},
-                                    history[i][j]
-                                ))
-                            }
-                            list.push({
-                                category:app.category,
-                                records:records
-                            })
-                        }
-                        let str=JSON.stringify(list)
-                        localStorage.setItem('history',str)
                     }
-                    let r=localStorage.getItem('records')
-                    if(r.substr(0,4)==='[{"t'){
-                        console.log('change records')
-                        let records=JSON.parse(r)
-                        let cate={}
-                        for(let id in this.category){
-                            cate[this.category[id].title]=this.category[id]
-                        }
-                        for(let i=0;i<records.length;i++){
-                            records[i]=Object.assign({cid:cate[records[i].title].id},records[i])
-                        }
-                        let str=JSON.stringify(records)
-                        localStorage.setItem('records',str)
+                    if(i>1){
+                        this.category[this.orderCategory[i].id].order=(this.orderCategory[i-1].order+this.orderCategory[i-2].order)/2
+                    }else if(i>0){
+                        this.category[this.orderCategory[i].id].order=0
                     }
-                }
+                },
+                moveDown:function(id){
+                    let i=0
+                    for(;i<this.orderCategory.length;i++){
+                        if(this.orderCategory[i].id==id){
+                            break
+                        }
+                    }
+                    if(i<this.orderCategory.length-2){
+                        this.category[this.orderCategory[i].id].order=(this.orderCategory[i+1].order+this.orderCategory[i+2].order)/2
+                    }else if(i<this.orderCategory.length-1){
+                        this.category[this.orderCategory[i].id].order=this.orderCategory[i+1].order+8
+                    }
+                },
             },
             watch:{
                 historyIndex:function(index){
