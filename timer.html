@@ -120,13 +120,13 @@
                         </div> -->
                     </div>
                     <div class="timecontrol">
-                        <a href="#" v-on:click="prev" class="link arrow arrow-left" v-if="historyIndex>0"><</a>
+                        <a href="#" v-on:click="prev" class="link arrow arrow-left" v-show="historyIndex>0"><</a>
                         <span>{{startTime}} —— {{endTime}}</span>
-                        <a href="#" v-on:click="next" class="arrow arrow-right" v-if="historyIndex<history.length">></a>
+                        <a href="#" v-on:click="next" class="arrow arrow-right" v-show="historyIndex<history.length">></a>
                     </div>
                     <div class="clearfix"></div>
                     <div class="row">
-                        <div class="col"><a class="btn btn-sm btn-light" v-on:click="returnCurrent"  v-bind:class='{disabled:historyIndex==history.length}'>返回当前周期</a></div>
+                        <div class="col"><a class="btn btn-sm btn-light" v-on:click="returnCurrent"  v-show='historyIndex!=history.length'>返回当前周期</a></div>
                     </div>
                 </div>
             </div>
